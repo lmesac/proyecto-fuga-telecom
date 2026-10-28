@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "telecom-churn"
+version = "0.1.0"
+description = "Proyecto de predicción de fuga de clientes en telecomunicaciones usando 35 variables"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas",
+    "numpy",
+    "scikit-learn",
+    #"lightgbm",
+    #"xgboost",
+    "matplotlib",
+    "seaborn",
+    "jupyter",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/telecom_churn"]
