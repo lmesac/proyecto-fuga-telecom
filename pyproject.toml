@@ -26,3 +26,8 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/telecom_churn"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
