@@ -1,0 +1,16 @@
+# Entornos virtuales
+.venv/
+env/
+venv/
+
+# Python y caché
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# macOS System Files
+.DS_Store
+
+# Modelos pesados generados localmente (opcional, si no quieres subirlos)
+models/*.pkl
