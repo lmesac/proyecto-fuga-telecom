@@ -1,3 +1,6 @@
+# Integrantes: 
+Jorge Diaz, Federico Martinez y Lida Mesa
+
 # Proyecto Final: Predicción de Fuga de Clientes (Telecom Churn)
 
 Proyecto de Ciencia de Datos enfocado en la predicción de la fuga de clientes (*Churn*) utilizando un conjunto de datos de **10,000 registros y 35 variables** (sociodemográficas, operativas, financieras y métricas de experiencia del cliente como NPS y CSAT).
