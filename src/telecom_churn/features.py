@@ -5,44 +5,21 @@ from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
-def load_data(file_path):
-    """Carga el dataset de las 35 variables desde la ruta especificada."""
-    df = pd.read_csv(file_path)
-    return df
-
-def preprocess_data(df, target_col, id_col):
+def load_and_preprocess_data(filepath: str = "data/telecom_churn_10000.csv"):
     """
-    Realiza la limpieza, imputación de nulos y transformación de variables 
-    para las 35 columnas del dataset sin generar fuga de datos (data leakage).
+    Carga el dataset de telecomunicaciones y remueve columnas innecesarias 
+    (como ChurnReason y CustomerID) para evitar data leakage.
     """
-    # Separar variables predictoras (X) y la variable objetivo (y)
-    # Convertimos el target 'Yes'/'No' a binario (1 y 0)
-    #X = df.drop(columns=[target_col, id_col])
-    # Excluimos el Churn (target), el ID y el motivo de fuga para evitar fuga de datos (data leakage)
-    X = df.drop(columns=[target_col, id_col, 'ChurnReason'])
+    df = pd.read_csv(filepath)
+    
+    target_col = "Churn"
+    id_col = "CustomerID"
+    
+    drop_cols = [id_col]
+    if 'ChurnReason' in df.columns:
+        drop_cols.append('ChurnReason')
+        
+    X = df.drop(columns=[target_col] + [c for c in drop_cols if c in df.columns])
     y = df[target_col].apply(lambda val: 1 if str(val).strip().lower() in ['yes', '1', 'true'] else 0)
     
-    # Identificar tipos de columnas automáticamente
-    numeric_features = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
-    categorical_features = X.select_dtypes(include=['object', 'category']).columns.tolist()
-    
-    # Pipeline para variables numéricas (imputa con la mediana y escala)
-    numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler())
-    ])
-    
-    # Pipeline para variables categóricas (imputa con valor más frecuente y aplica One-Hot Encoding)
-    categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='most_frequent')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    ])
-    
-    # Unir ambos preprocesadores en un ColumnTransformer
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_transformer, numeric_features),
-            ('cat', categorical_transformer, categorical_features)
-        ])
-        
-    return X, y, preprocessor
+    return df, X, y
