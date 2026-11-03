@@ -1,0 +1,131 @@
+{
+  "seed": 42,
+  "split": [
+    6000,
+    2000,
+    2000
+  ],
+  "threshold": 0.5,
+  "features": [
+    "Age",
+    "SeniorCitizen",
+    "Gender",
+    "Partner",
+    "Dependents",
+    "TenureMonths",
+    "TenureCohort",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "ServiceCount",
+    "Contract",
+    "PaperlessBilling",
+    "AutoPay",
+    "PaymentMethod",
+    "MonthlyCharges",
+    "DiscountRate",
+    "TotalCharges",
+    "SupportTickets",
+    "Complaints",
+    "CustomerContacts",
+    "ServiceOutages",
+    "NPS",
+    "CSAT",
+    "EstimatedCLV",
+    "AvgTicketCost"
+  ],
+  "validation": {
+    "Baseline": {
+      "accuracy": 0.583,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.5,
+      "confusion_matrix": [
+        [
+          1166,
+          0
+        ],
+        [
+          834,
+          0
+        ]
+      ]
+    },
+    "Logistic Regression": {
+      "accuracy": 0.6965,
+      "precision": 0.6523489932885906,
+      "recall": 0.5827338129496403,
+      "f1": 0.6155794806839772,
+      "roc_auc": 0.763855810720206,
+      "confusion_matrix": [
+        [
+          907,
+          259
+        ],
+        [
+          348,
+          486
+        ]
+      ]
+    },
+    "Random Forest": {
+      "accuracy": 0.6915,
+      "precision": 0.6574746008708273,
+      "recall": 0.5431654676258992,
+      "f1": 0.5948785292186474,
+      "roc_auc": 0.7424612625508513,
+      "confusion_matrix": [
+        [
+          930,
+          236
+        ],
+        [
+          381,
+          453
+        ]
+      ]
+    },
+    "HistGradientBoosting": {
+      "accuracy": 0.6785,
+      "precision": 0.6248366013071895,
+      "recall": 0.5731414868105515,
+      "f1": 0.5978736710444027,
+      "roc_auc": 0.7391767546511676,
+      "confusion_matrix": [
+        [
+          879,
+          287
+        ],
+        [
+          356,
+          478
+        ]
+      ]
+    }
+  },
+  "winner": "Logistic Regression",
+  "test": {
+    "accuracy": 0.6995,
+    "precision": 0.6666666666666666,
+    "recall": 0.5587529976019184,
+    "f1": 0.6079582517938682,
+    "roc_auc": 0.7509409282179745,
+    "confusion_matrix": [
+      [
+        933,
+        233
+      ],
+      [
+        368,
+        466
+      ]
+    ]
+  }
+}

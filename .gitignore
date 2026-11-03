@@ -14,3 +14,6 @@ __pycache__/
 
 # Modelos pesados generados localmente (opcional, si no quieres subirlos)
 models/*.pkl
+models/*.joblib
+reports-training.log
+.env

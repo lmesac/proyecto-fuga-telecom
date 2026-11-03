@@ -1,29 +1,11 @@
-name: CI Pipeline - Telecom Churn
-
-on:
-  push:
-    branches: [ "desarrollo-inicial", "main" ]
-  pull_request:
-    branches: [ "desarrollo-inicial", "main" ]
-
+name: Pruebas Telecom
+on: [push, pull_request]
 jobs:
-  build-and-test:
+  tests:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-
-    - name: Install uv and dependencies
-      run: |
-        pip install uv
-        uv sync
-
-    - name: Run unit tests with pytest
-      run: |
-        uv run pytest
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv python install 3.12
+      - run: uv sync --locked --python 3.12
+      - run: uv run pytest -q

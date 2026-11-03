@@ -1,16 +1,15 @@
+"""Inferencia usando el pipeline completo guardado por train.py."""
+import joblib
 import pandas as pd
-from telecom_churn.config import PROCESSED_DATA_DIR, MODELS_DIR
+from .config import BASE_DIR
 
-def predict_churn(new_data_path: str):
-    """
-    Carga el dataset nuevo y genera las probabilidades de fuga de clientes.
-    """
-    print("1. Cargando datos para predicción...")
-    df = pd.read_csv(new_data_path)
-    
-    # Aquí puedes integrar la lógica para cargar tu modelo entrenado y aplicar predict_proba
-    print(f"Dataset cargado con {df.shape[0]} registros listos para scoring.")
-    return df
-
-if __name__ == "__main__":
-    print("Módulo de predicción listo.")
+def predict_churn(data, model_path=None):
+    # Cargar únicamente artefactos propios: joblib no es seguro para archivos desconocidos.
+    model = joblib.load(model_path or BASE_DIR / "models/churn.joblib")
+    frame = pd.read_csv(data) if isinstance(data, (str, type(BASE_DIR))) else data.copy()
+    missing = set(model.feature_names_in_) - set(frame.columns)
+    if missing:
+        raise ValueError(f"Faltan columnas: {sorted(missing)}")
+    frame = frame[list(model.feature_names_in_)]
+    return pd.DataFrame({"probabilidad_abandono": model.predict_proba(frame)[:, 1],
+                         "prediccion": model.predict(frame)})

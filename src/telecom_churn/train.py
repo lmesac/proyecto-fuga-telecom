@@ -1,62 +1,49 @@
-from sklearn.model_selection import train_test_split
+"""Compara modelos en validación y reserva test para evaluar el ganador."""
+import json
+import joblib
+from sklearn.base import clone
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-from telecom_churn.config import DATA_FILE, TARGET_COLUMN, ID_COLUMN
-from telecom_churn.features import load_data, preprocess_data
-from telecom_churn.model import get_models
+from sklearn.model_selection import train_test_split
+from sklearn.dummy import DummyClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from .data import load_data
+from .features import preprocess_data
+from .model import get_models
+from .config import BASE_DIR
+
+def metrics(y, prediction, probability):
+    return {"accuracy": accuracy_score(y, prediction),
+            "precision": precision_score(y, prediction, zero_division=0),
+            "recall": recall_score(y, prediction, zero_division=0),
+            "f1": f1_score(y, prediction, zero_division=0),
+            "roc_auc": roc_auc_score(y, probability),
+            "confusion_matrix": confusion_matrix(y, prediction).tolist()}
 
 def main():
-    print("1. Cargando datos...")
-    df = load_data(DATA_FILE)
-    print(f"Dimensiones del dataset: {df.shape} (Debe tener 35 columnas)")
-    
-    print("2. Preprocesando variables...")
-    X, y, preprocessor = preprocess_data(df, TARGET_COLUMN, ID_COLUMN)
-    
-    # Dividir en entrenamiento (80%) y prueba (20%)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    
-    print("3. Entrenando y evaluando los 3 modelos...")
-    models = get_models()
+    X, y, preprocessor = preprocess_data(load_data())
+    # Sin fechas disponibles: partición aleatoria estratificada 60/20/20.
+    # No permite demostrar rendimiento futuro; se documenta esa limitación.
+    Xdev, Xt, ydev, yt = train_test_split(X, y, test_size=.2, stratify=y, random_state=42)
+    Xa, Xv, ya, yv = train_test_split(Xdev, ydev, test_size=.25, stratify=ydev, random_state=42)
+    candidates = {"Baseline": DummyClassifier(strategy="prior"), **get_models()}
     results = {}
-    
-    for name, model in models.items():
-        # Crear un pipeline que une el preprocesador y el modelo (evita fuga de datos)
-        pipeline = Pipeline(steps=[
-            ('preprocessor', preprocessor),
-            ('classifier', model)
-        ])
-        
-        # Entrenar modelo
-        pipeline.fit(X_train, y_train)
-        
-        # Predecir sobre conjunto de prueba
-        y_pred = pipeline.predict(X_test)
-        y_prob = pipeline.predict_proba(X_test)[:, 1] if hasattr(pipeline, "predict_proba") else y_pred
-        
-        # Calcular métricas clave
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred, zero_division=0)
-        rec = recall_score(y_test, y_pred, zero_division=0)
-        f1 = f1_score(y_test, y_pred, zero_division=0)
-        auc = roc_auc_score(y_test, y_prob)
-        
-        results[name] = {
-            "Accuracy": acc,
-            "Precision": prec,
-            "Recall": rec,
-            "F1-Score": f1,
-            "ROC-AUC": auc
-        }
-        
-        print(f"\n--- Resultados para: {name} ---")
-        print(f"  Accuracy:  {acc:.4f}")
-        print(f"  Precision: {prec:.4f}")
-        print(f"  Recall:    {rec:.4f}")
-        print(f"  F1-Score:  {f1:.4f}")
-        print(f"  ROC-AUC:   {auc:.4f}")
-
-    print("\n¡Entrenamiento completado exitosamente con las 35 variables!")
+    for name, model in candidates.items():
+        pipeline = Pipeline([("preprocessor", clone(preprocessor)), ("classifier", clone(model))])
+        pipeline.fit(Xa, ya)
+        results[name] = metrics(yv, pipeline.predict(Xv), pipeline.predict_proba(Xv)[:, 1])
+    # El criterio se fija antes de mirar test: mayor ROC-AUC de validación.
+    winner = max((n for n in results if n != "Baseline"), key=lambda n: results[n]["roc_auc"])
+    pipeline = Pipeline([("preprocessor", clone(preprocessor)), ("classifier", clone(candidates[winner]))])
+    pipeline.fit(Xdev, ydev)
+    report = {"seed": 42, "split": [len(Xa), len(Xv), len(Xt)], "threshold": .5,
+              "features": list(X.columns), "validation": results, "winner": winner,
+              "test": metrics(yt, pipeline.predict(Xt), pipeline.predict_proba(Xt)[:, 1])}
+    # Guardamos el procesamiento junto al modelo para reutilizar exactamente la misma lógica.
+    (BASE_DIR / "models").mkdir(exist_ok=True)
+    (BASE_DIR / "reports").mkdir(exist_ok=True)
+    joblib.dump(pipeline, BASE_DIR / "models/churn.joblib")
+    (BASE_DIR / "reports/metrics.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report, indent=2))
 
 if __name__ == "__main__":
     main()

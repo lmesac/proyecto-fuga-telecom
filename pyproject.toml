@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "telecom-churn"
 version = "0.1.0"
-description = "Proyecto de predicción de fuga de clientes en telecomunicaciones usando 35 variables"
+description = "Proyecto de predicciÃ³n de fuga de clientes en telecomunicaciones usando 35 variables"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -17,6 +17,8 @@ dependencies = [
     "matplotlib",
     "seaborn",
     "jupyter",
+    "plotly",
+    "streamlit",
 ]
 
 [project.optional-dependencies]
