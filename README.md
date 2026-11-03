@@ -47,7 +47,7 @@ El dataset esta compuesto por 4 dimensiones claves:
 
 ## Objetivo principal:
 
-Servir de laboratorio para entrenar algoritmos de clasificación (como Regresión Logística, Random Forest o XGBoost) que predigan si un cliente cancelará o no su suscripción antes de que suceda
+Servir de experimento para entrenar algoritmos de clasificación (como Regresión Logística, Random Forest o HistGradientBoostingClassifier) que predigan si un cliente cancelará o no su suscripción antes de que suceda
 
 ---
 
@@ -118,6 +118,11 @@ El modelo seleccionado como **Ganador para Producción y Estrategia de CX** es l
 
 * **¿Por qué se selecciona?:** Obtiene la mayor capacidad de discriminación general (**ROC-AUC de 0.7509**) y el mejor equilibrio entre precisión y sensibilidad (**F1-Score de 0.6080**). 
 * **Valor para el Negocio (Customer Experience):** Este modelo permite a la compañía identificar con mayor certeza el grupo de clientes con alto riesgo de abandono. Esto optimiza el presupuesto de retención (evitando dar incentivos a clientes estables) y maximiza la captura oportuna de usuarios propensos a cancelar el servicio.
+
+
+### 4. Analisis critico del nmodelo
+
+Se identificó una limitación en el comportamiento puro del modelo estadístico: ante perfiles con alta satisfacción (NPS 10, CSAT 5) pero bajo compromiso contractual (contratos mes a mes), el algoritmo tiende a sobreponderar el riesgo de cancelación debido a la facilidad de salida del cliente. Esto demuestra que, en entornos de telecomunicaciones, los modelos predictivos cuantitativos deben complementarse siempre con estrategias cualitativas de retención y revisión de ofertas comerciales, evitando confiar ciegamente en una única probabilidad algorítmica.
 
 ### 🛠️ Arquitectura y Componentes
 El proyecto está desarrollado bajo una arquitectura modular y buenas prácticas de MLOps:
