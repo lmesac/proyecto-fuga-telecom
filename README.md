@@ -81,6 +81,25 @@ proyecto-fuga-telecom/
 └── README.md                       # Documentación principal, contexto e interpretación de resultados
 
 
+# Paso a paso de ejecucion del proyecto
+
+1. Clonar el repositorio y configurar el entorno
+# Clonar el repositorio
+git clone https://github.com/lmesac/proyecto-fuga-telecom.git
+cd proyecto-fuga-telecom
+# Sincronizar dependencias y crear el entorno virtual automáticamente con uv
+uv sync
+
+2. Ejecutar las pruebas unitarias (Pytest)
+uv run pytest
+
+3. Entrenar y generar el artefacto del modelo
+uv run python -c "from telecom_churn.features import load_and_preprocess_data; from telecom_churn.model import train_and_save_full_pipeline; df, _, _ = load_and_preprocess_data(); train_and_save_full_pipeline(df, 'Churn', 'Logistic Regression')"
+
+4. Levantar la Interfaz Web Interactiva (Streamlit)
+uv run streamlit run app.py
+make test
+
 
 ## 📊 Resultados y Evaluación de Modelos (Churn Prediction)
 
