@@ -7,8 +7,8 @@ from sklearn.pipeline import Pipeline
 
 def load_and_preprocess_data(filepath: str = "data/telecom_churn_10000.csv"):
     """
-    Carga el dataset de telecomunicaciones y remueve columnas innecesarias 
-    (como ChurnReason y CustomerID) para evitar data leakage.
+    Carga el dataset de telecomunicaciones, remueve columnas innecesarias 
+    (como ChurnReason y CustomerID), maneja valores nulos e imputa datos faltantes.
     """
     df = pd.read_csv(filepath)
     
@@ -22,4 +22,11 @@ def load_and_preprocess_data(filepath: str = "data/telecom_churn_10000.csv"):
     X = df.drop(columns=[target_col] + [c for c in drop_cols if c in df.columns])
     y = df[target_col].apply(lambda val: 1 if str(val).strip().lower() in ['yes', '1', 'true'] else 0)
     
-    return df, X, y
+    # 1. Convertir variables categóricas de texto a numéricas (One-Hot Encoding)
+    X = pd.get_dummies(X, drop_first=True)
+    
+    # 2. Imputar valores nulos (NaN) usando la mediana para columnas numéricas
+    imputer = SimpleImputer(strategy='median')
+    X_imputed = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+    
+    return df, X_imputed, y
