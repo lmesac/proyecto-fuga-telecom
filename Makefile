@@ -20,6 +20,6 @@ test:
 	uv run pytest -v
 
 lint:
-	uv run ruff check src tests app.py
+	uv run ruff check src tests
 
 check: lint test
