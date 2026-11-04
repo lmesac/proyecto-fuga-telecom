@@ -51,3 +51,12 @@ No hay fechas, horizonte de abandono ni evidencia de que satisfacción y valores
 
 ## Estructura
 src/telecom_churn contiene carga, preparación, modelos, entrenamiento y predicción; app contiene interfaz; tests valida carga, procesamiento e inferencia; notebooks/02_eda_federico.ipynb contiene EDA con Plotly. REQUISITOS.md identifica pendientes técnicos y del equipo.
+
+## Guía de lectura
+1. OBJETIVO.md: propósito y criterios de éxito.
+2. dataset-card.md: datos y dudas pendientes.
+3. notebooks/02_eda_federico.ipynb: preguntas, cálculos y conclusiones.
+4. HALLAZGOS.md: evidencia y decisiones.
+5. GUIA_DEL_CODIGO.md: función de cada componente.
+6. MODEL_CARD.md: resultados y límites.
+7. reports/EVALUACION.md: estabilidad, umbrales e interpretación.
