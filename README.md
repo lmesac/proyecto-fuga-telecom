@@ -19,9 +19,16 @@ Este proyecto desarrolla un flujo de Ciencia de Datos orientado al análisis y l
 
 El objetivo es explorar las características de los clientes, identificar relaciones entre variables sociodemográficas, comerciales, financieras y de experiencia, y entrenar modelos de clasificación que permitan estimar la probabilidad de abandono del servicio.
 
-El análisis utiliza el archivo de `telecom_churn_10000.csv`, compuesto por originalmente por 7.043 filas y 21 columnas, el cual es complementado de manera sintetica con variables de servicio y satisfaccion para enrriquecer el analisis, quedando finalmente con **10.000 registros y 35 variables**.
+## 2.1 Origen y transformación del conjunto de datos
 
-Se consideran, entre otras, variables de permanencia, servicios contratados, facturación, comportamiento de contacto, reclamaciones, satisfacción (NPS y CSAT) y fuga de clientes.
+El proyecto parte del conjunto de datos Telco Customer Churn, publicado por Blastchar en Kaggle y basado en IBM Sample Data Sets. La fuente original contiene 7.043 registros y 21 columnas, con información demográfica, servicios contratados, características de facturación y la variable objetivo Churn.
+
+Para ampliar el alcance del análisis, se construyó una versión enriquecida sintéticamente del conjunto de datos, con 10.000 registros y 35 columnas. La transformación incorporó nuevas dimensiones relacionadas con servicios, antigüedad, comportamiento operativo, satisfacción y valor del cliente, entre ellas NPS, CSAT, tickets de soporte, quejas, contactos, interrupciones del servicio y valor estimado del ciclo de vida del cliente.
+
+Esta ampliación tiene como propósito académico explorar relaciones entre la fuga de clientes y variables adicionales de experiencia y operación. Las variables y registros sintéticos deben interpretarse como datos simulados y no como observaciones reales de clientes.
+
+Por tanto, los resultados del análisis exploratorio y de los modelos predictivos corresponden exclusivamente al conjunto de datos enriquecido utilizado en el proyecto. No deben interpretarse como estimaciones representativas del mercado real de telecomunicaciones.
+
 
 El proyecto integra herramientas de Python, Pandas, Seaborn, Plotly y Streamlit, bajo una estructura modular que facilita la reproducibilidad, las pruebas y la evolución del análisis.
 
