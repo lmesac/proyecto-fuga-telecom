@@ -1,14 +1,25 @@
-.PHONY: setup install test train
+
+.PHONY: setup install train predict app test lint check
 
 setup:
-	uv venv
 	uv sync
 
 install:
 	uv sync
 
-test:
-	uv run pytest
-
 train:
 	uv run python -m telecom_churn.train
+
+predict:
+	uv run python -m telecom_churn.predict
+
+app:
+	uv run streamlit run app.py
+
+test:
+	uv run pytest -v
+
+lint:
+	uv run ruff check src tests app.py
+
+check: lint test

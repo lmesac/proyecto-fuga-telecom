@@ -1,40 +1,116 @@
-import os
+
 import pandas as pd
-from telecom_churn.features import load_and_preprocess_data
+
+from sklearn.model_selection import train_test_split
+
+from telecom_churn.config import (
+    TARGET_COLUMN,
+    ID_COLUMN,
+    EXCLUDED_COLUMNS
+)
+
+from telecom_churn.data import load_data
+
+from telecom_churn.features import (
+    prepare_features,
+    identify_feature_types
+)
+
+from telecom_churn.model import (
+    get_models,
+    build_pipeline
+)
+
 
 def test_data_loading():
-    """
-    Verifica que el archivo de datos existe y se carga con las dimensiones correctas (10,000 filas y 35 columnas).
-    """
-    data_path = "data/telecom_churn_10000.csv"
-    assert os.path.exists(data_path), "El archivo de datos no se encuentra en la ruta especificada."
-    
-    df = pd.read_csv(data_path)
-    assert df.shape[0] > 0, "El dataset está vacío."
-    assert df.shape[1] == 35, f"Se esperaban 35 columnas, pero se encontraron {df.shape[1]}."
+    """Verifica que el dataset se cargue correctamente."""
 
-def test_model_import():
-    """
-    Verifica que los modelos se puedan importar correctamente desde el módulo.
-    """
-    from telecom_churn.model import get_models
+    df = load_data()
+
+    assert not df.empty
+    assert df.shape == (10000, 35)
+    assert TARGET_COLUMN in df.columns
+
+
+def test_feature_preparation():
+    """Verifica la preparación de variables predictoras."""
+
+    df = load_data()
+
+    X, y = prepare_features(df)
+
+    assert not X.empty
+    assert not y.empty
+
+    assert TARGET_COLUMN not in X.columns
+    assert ID_COLUMN not in X.columns
+
+    for column in EXCLUDED_COLUMNS:
+        assert column not in X.columns
+
+    assert set(y.unique()).issubset({0, 1})
+
+
+def test_feature_identification():
+    """Verifica la identificación de variables numéricas y categóricas."""
+
+    df = load_data()
+    X, y = prepare_features(df)
+
+    numeric_features, categorical_features = (
+        identify_feature_types(X)
+    )
+
+    assert len(numeric_features) > 0
+    assert len(categorical_features) > 0
+
+    assert (
+        len(numeric_features) + len(categorical_features)
+        == X.shape[1]
+    )
+
+
+def test_model_definitions():
+    """Verifica que existan los tres algoritmos."""
+
     models = get_models()
-    assert isinstance(models, dict), "Los modelos deben devolverse en un diccionario."
-    assert len(models) >= 3, "Debe haber al menos 3 modelos definidos para comparar."
 
-def test_feature_preprocessing():
-    """
-    Verifica que el procesamiento de características funcione correctamente, 
-    que el target sea binario y que se evite el Data Leakage excluyendo CustomerID.
-    """
-    df, X, y = load_and_preprocess_data()
-    
-    assert not X.empty, "El conjunto de características (X) no puede estar vacío."
-    assert not y.empty, "La variable objetivo (y) no puede estar vacía."
-    
-    # Validar que el target sea estrictamente binario (0 o 1)
-    unique_targets = y.unique()
-    assert set(unique_targets).issubset({0, 1}), "El target debe ser estrictamente binario (0 o 1)."
-    
-    # Validar prevención de Data Leakage
-    assert "CustomerID" not in X.columns, "El CustomerID debe ser excluido para evitar fugas de datos."
+    assert isinstance(models, dict)
+    assert len(models) >= 3
+
+
+def test_pipeline_training():
+    """Verifica que el pipeline pueda entrenarse y predecir."""
+
+    df = load_data()
+    X, y = prepare_features(df)
+
+    numeric_features, categorical_features = (
+        identify_feature_types(X)
+    )
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        train_size=300,
+        random_state=42,
+        stratify=y
+    )
+
+    pipeline = build_pipeline(
+        numeric_features,
+        categorical_features,
+        "Logistic Regression"
+    )
+
+    pipeline.fit(X_train, y_train)
+
+    predictions = pipeline.predict(X_test)
+
+    assert len(predictions) == len(y_test)
+    assert set(predictions).issubset({0, 1})
+
+    probabilities = pipeline.predict_proba(X_test)
+
+    assert probabilities.shape == (len(X_test), 2)
+    assert ((probabilities >= 0) & (probabilities <= 1)).all()

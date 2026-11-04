@@ -1,16 +1,20 @@
 # Entornos virtuales
 .venv/
-env/
 venv/
 
-# Python y caché
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-.pytest_cache/
 
-# macOS System Files
+# Pruebas y herramientas
+.pytest_cache/
+.ruff_cache/
+
+# Sistema operativo
 .DS_Store
 
-# Modelos pesados generados localmente (opcional, si no quieres subirlos)
-models/*.pkl
+# Secretos
+.env
+
+# Jupyter
+.ipynb_checkpoints/

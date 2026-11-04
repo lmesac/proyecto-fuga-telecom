@@ -1,0 +1,190 @@
+{
+    "project": "Telecom Churn Prediction",
+    "target": "Churn",
+    "random_state": 42,
+    "test_size": 0.2,
+    "selection_metric": "cv_f1_mean",
+    "validation_folds": 5,
+    "training_records": 8000,
+    "test_records": 2000,
+    "numeric_features": [
+        "Age",
+        "SeniorCitizen",
+        "TenureMonths",
+        "ServiceCount",
+        "MonthlyCharges",
+        "DiscountRate",
+        "TotalCharges",
+        "SupportTickets",
+        "Complaints",
+        "CustomerContacts",
+        "ServiceOutages",
+        "NPS",
+        "CSAT",
+        "EstimatedCLV",
+        "AvgTicketCost"
+    ],
+    "categorical_features": [
+        "Gender",
+        "Partner",
+        "Dependents",
+        "TenureCohort",
+        "PhoneService",
+        "MultipleLines",
+        "InternetService",
+        "OnlineSecurity",
+        "OnlineBackup",
+        "DeviceProtection",
+        "TechSupport",
+        "StreamingTV",
+        "StreamingMovies",
+        "Contract",
+        "PaperlessBilling",
+        "AutoPay",
+        "PaymentMethod"
+    ],
+    "best_model": "Logistic Regression",
+    "models": {
+        "Logistic Regression": {
+            "cv_f1_mean": 0.6008974861364796,
+            "cv_f1_std": 0.022306245466698186,
+            "accuracy": 0.6995,
+            "precision": 0.666191155492154,
+            "recall": 0.5599520383693045,
+            "f1": 0.6084690553745928,
+            "roc_auc": 0.7514437849377444,
+            "average_precision": 0.6842087086109514,
+            "confusion_matrix": [
+                [
+                    932,
+                    234
+                ],
+                [
+                    367,
+                    467
+                ]
+            ],
+            "classification_report": {
+                "No fuga": {
+                    "precision": 0.7174749807544265,
+                    "recall": 0.7993138936535163,
+                    "f1-score": 0.7561866125760649,
+                    "support": 1166.0
+                },
+                "Fuga": {
+                    "precision": 0.666191155492154,
+                    "recall": 0.5599520383693045,
+                    "f1-score": 0.6084690553745928,
+                    "support": 834.0
+                },
+                "accuracy": 0.6995,
+                "macro avg": {
+                    "precision": 0.6918330681232903,
+                    "recall": 0.6796329660114104,
+                    "f1-score": 0.6823278339753289,
+                    "support": 2000.0
+                },
+                "weighted avg": {
+                    "precision": 0.6960896256200588,
+                    "recall": 0.6995,
+                    "f1-score": 0.694588391223051,
+                    "support": 2000.0
+                }
+            }
+        },
+        "Random Forest": {
+            "cv_f1_mean": 0.5585979569135329,
+            "cv_f1_std": 0.01346330203154509,
+            "accuracy": 0.676,
+            "precision": 0.6355685131195336,
+            "recall": 0.5227817745803357,
+            "f1": 0.5736842105263158,
+            "roc_auc": 0.7294420038583198,
+            "average_precision": 0.6452901605076058,
+            "confusion_matrix": [
+                [
+                    916,
+                    250
+                ],
+                [
+                    398,
+                    436
+                ]
+            ],
+            "classification_report": {
+                "No fuga": {
+                    "precision": 0.6971080669710806,
+                    "recall": 0.7855917667238422,
+                    "f1-score": 0.7387096774193549,
+                    "support": 1166.0
+                },
+                "Fuga": {
+                    "precision": 0.6355685131195336,
+                    "recall": 0.5227817745803357,
+                    "f1-score": 0.5736842105263158,
+                    "support": 834.0
+                },
+                "accuracy": 0.676,
+                "macro avg": {
+                    "precision": 0.6663382900453071,
+                    "recall": 0.654186770652089,
+                    "f1-score": 0.6561969439728353,
+                    "support": 2000.0
+                },
+                "weighted avg": {
+                    "precision": 0.6714460730149856,
+                    "recall": 0.676,
+                    "f1-score": 0.6698940577249575,
+                    "support": 2000.0
+                }
+            }
+        },
+        "HistGradientBoosting": {
+            "cv_f1_mean": 0.5882684585926935,
+            "cv_f1_std": 0.015046955703942032,
+            "accuracy": 0.68,
+            "precision": 0.6358543417366946,
+            "recall": 0.5443645083932853,
+            "f1": 0.58656330749354,
+            "roc_auc": 0.7283823027341421,
+            "average_precision": 0.6572299283398735,
+            "confusion_matrix": [
+                [
+                    906,
+                    260
+                ],
+                [
+                    380,
+                    454
+                ]
+            ],
+            "classification_report": {
+                "No fuga": {
+                    "precision": 0.7045101088646968,
+                    "recall": 0.7770154373927959,
+                    "f1-score": 0.7389885807504079,
+                    "support": 1166.0
+                },
+                "Fuga": {
+                    "precision": 0.6358543417366946,
+                    "recall": 0.5443645083932853,
+                    "f1-score": 0.58656330749354,
+                    "support": 834.0
+                },
+                "accuracy": 0.68,
+                "macro avg": {
+                    "precision": 0.6701822253006957,
+                    "recall": 0.6606899728930407,
+                    "f1-score": 0.6627759441219739,
+                    "support": 2000.0
+                },
+                "weighted avg": {
+                    "precision": 0.6758806539723199,
+                    "recall": 0.68,
+                    "f1-score": 0.675427241802294,
+                    "support": 2000.0
+                }
+            }
+        }
+    }
+}

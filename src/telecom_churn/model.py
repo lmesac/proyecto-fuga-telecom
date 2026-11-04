@@ -1,74 +1,87 @@
-import joblib
-from pathlib import Path
+
+"""
+Módulo de construcción de modelos de Machine Learning.
+
+Define los algoritmos de clasificación y construye
+los pipelines que integran el preprocesamiento con
+cada modelo.
+
+El entrenamiento, evaluación y almacenamiento se realizan
+en train.py.
+"""
+
 from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
+from sklearn.ensemble import (
+    RandomForestClassifier,
+    HistGradientBoostingClassifier
+)
+
+from telecom_churn.features import build_preprocessor
+
 
 def get_models():
     """
-    Define los 3 modelos a evaluar:
-    1. Regresión Logística (Modelo lineal base)
-    2. Random Forest (Modelo basado en árboles)
-    3. HistGradientBoosting (Gradient Boosting nativo de Scikit-Learn)
+    Define los tres modelos de clasificación que se van a comparar.
     """
+
     models = {
-        "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42),
-        "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "HistGradientBoosting": HistGradientBoostingClassifier(random_state=42)
+        "Logistic Regression": LogisticRegression(
+            max_iter=1000,
+            random_state=42
+        ),
+
+        "Random Forest": RandomForestClassifier(
+            n_estimators=100,
+            random_state=42
+        ),
+
+        "HistGradientBoosting": HistGradientBoostingClassifier(
+            random_state=42
+        )
     }
+
     return models
 
-def train_and_save_full_pipeline(df_raw, target_col="Churn", model_name="Logistic Regression"):
+
+def build_pipeline(
+    numeric_features,
+    categorical_features,
+    model_name="Logistic Regression"
+):
     """
-    Crea un Pipeline completo que incluye preprocesamiento (imputación, escalado, codificación)
-    y el modelo de Machine Learning.
+    Construye un pipeline completo de Machine Learning.
+
+    Integra el preprocesamiento y el algoritmo seleccionado.
+
+    El pipeline todavía no está entrenado.
     """
-    id_col = "CustomerID"
-    drop_cols = [id_col]
-    if 'ChurnReason' in df_raw.columns:
-        drop_cols.append('ChurnReason')
-        
-    X = df_raw.drop(columns=[target_col] + [c for c in drop_cols if c in df_raw.columns])
-    y = df_raw[target_col].apply(lambda val: 1 if str(val).strip().lower() in ['yes', '1', 'true'] else 0)
-    
-    numeric_features = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
-    categorical_features = X.select_dtypes(include=['object', 'category', 'bool']).columns.tolist()
-    
-    numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler())
-    ])
-    
-    categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-    ])
-    
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', numeric_transformer, numeric_features),
-            ('cat', categorical_transformer, categorical_features)
-        ])
-    
+
     models = get_models()
-    
+
     if model_name not in models:
-        raise ValueError(f"Modelo no válido: {model_name}")
-        
-    full_pipeline = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', models[model_name])
-    ])
-    
-    print(f"Entrenando el Pipeline completo con {model_name}...")
-    full_pipeline.fit(X, y)
-    
-    Path("models").mkdir(parents=True, exist_ok=True, mode=0o755)
-    model_path = "models/best_model.pkl"
-    joblib.dump(full_pipeline, model_path)
-    print(f"¡Pipeline entrenado y guardado exitosamente en '{model_path}'!")
-    
+        raise ValueError(
+            f"Modelo no válido: {model_name}. "
+            f"Modelos disponibles: {list(models.keys())}"
+        )
+
+    if not numeric_features and not categorical_features:
+        raise ValueError(
+            "Debe proporcionarse al menos una variable predictora."
+        )
+
+    # Construir el preprocesador
+    preprocessor = build_preprocessor(
+        numeric_features,
+        categorical_features
+    )
+
+    # Integrar preprocesamiento y algoritmo
+    full_pipeline = Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", models[model_name])
+        ]
+    )
+
     return full_pipeline

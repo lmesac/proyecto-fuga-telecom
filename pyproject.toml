@@ -1,3 +1,4 @@
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -5,24 +6,19 @@ build-backend = "hatchling.build"
 [project]
 name = "telecom-churn"
 version = "0.1.0"
-description = "Proyecto de predicción de fuga de clientes en telecomunicaciones usando 35 variables"
+description = "Proyecto de predicción de fuga de clientes en telecomunicaciones"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "pandas",
-    "numpy",
-    "scikit-learn",
-    #"lightgbm",
-    #"xgboost",
+    "joblib>=1.4",
     "matplotlib",
+    "numpy",
+    "pandas",
+    "scikit-learn>=1.2",
     "seaborn",
-    "jupyter",
     "streamlit>=1.65.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
+    "jupyter",
+    "plotly>=7.1.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -30,5 +26,13 @@ packages = ["src/telecom_churn"]
 
 [dependency-groups]
 dev = [
-    "pytest>=9.2.0",
+    "ipykernel>=7.3.0",
+    "pytest>=8",
+    "ruff>=0.11",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
