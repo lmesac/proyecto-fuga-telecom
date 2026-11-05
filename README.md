@@ -196,6 +196,10 @@ Matriz de confusión:
 | Falsos negativos (FN)     |      183 |
 | Verdaderos positivos (TP) |      651 |
 
+## Diferencia entre los reportes de evaluación: 
+
+el archivo reports/threshold_evaluation.csv contiene los resultados de la comparación de umbrales mediante validación cruzada sobre los 8.000 registros del conjunto de entrenamiento. En cambio, las métricas y la matriz de confusión presentadas en esta sección corresponden a la evaluación final del umbral 0,35 sobre los 2.000 registros del conjunto de prueba. Por esta diferencia en los conjuntos de evaluación, sus resultados no deben compararse como si provinieran de la misma muestra.
+
 Al reducir el umbral aumentó el Recall, es decir, se identificó una mayor proporción de los clientes clasificados como casos de fuga. Al mismo tiempo, aumentaron los falsos positivos.
 
 El umbral de 0,35 es un escenario de evaluación orientado a la sensibilidad; no se ha demostrado que sea el umbral óptimo para el negocio. Su selección operativa debería considerar el costo de las campañas de retención, el valor del cliente, la capacidad de atención y el costo de no intervenir oportunamente.
