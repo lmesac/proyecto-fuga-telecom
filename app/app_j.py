@@ -18,8 +18,8 @@ st.set_page_config(
 st.title("📊 Centro de Riesgo de Fuga de Clientes")
 
 st.write(
-    "Complete algunos datos clave del cliente y el sistema "
-    "estimará su probabilidad de fuga."
+    "Herramienta para estimar el riesgo de fuga de clientes "
+    "utilizando el modelo de Machine Learning entrenado en el proyecto."
 )
 
 
@@ -31,6 +31,10 @@ df_reference = load_data()
 
 
 def category_options(column: str) -> list:
+    """
+    Obtiene las categorías válidas de una variable
+    directamente desde el dataset.
+    """
     return sorted(
         df_reference[column]
         .dropna()
@@ -55,7 +59,7 @@ def default_value(column: str):
 
 def build_base_customer() -> dict:
     """
-    Construye un cliente base usando valores típicos
+    Construye un cliente base utilizando valores típicos
     del dataset.
     """
 
@@ -77,15 +81,34 @@ def build_base_customer() -> dict:
     return customer
 
 
+def complete_batch_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Completa las variables faltantes de un archivo masivo
+    utilizando valores de referencia del dataset.
+    """
+
+    completed_df = df.copy()
+
+    base_customer = build_base_customer()
+
+    for column, value in base_customer.items():
+
+        if column not in completed_df.columns:
+            completed_df[column] = value
+
+    return completed_df
+
+
 # =========================================================
-# FORMULARIO DE EVALUACIÓN RÁPIDA
+# EVALUACIÓN INDIVIDUAL
 # =========================================================
 
-st.subheader("Evaluación rápida")
+st.header("👤 Evaluación individual")
 
 st.caption(
-    "Las variables no ingresadas se completan automáticamente "
-    "con valores de referencia del dataset."
+    "Ingrese algunos datos clave del cliente. "
+    "Las demás variables requeridas por el modelo se completan "
+    "automáticamente con valores de referencia del dataset."
 )
 
 with st.form("quick_customer_form"):
@@ -170,16 +193,9 @@ with st.form("quick_customer_form"):
     )
 
 
-# =========================================================
-# PREDICCIÓN
-# =========================================================
-
 if submitted:
 
     customer = build_base_customer()
-
-    # Reemplazar únicamente las variables
-    # ingresadas por el usuario.
 
     customer["TenureMonths"] = tenure_months
     customer["Contract"] = contract
@@ -217,7 +233,7 @@ if submitted:
 
         st.divider()
 
-        st.header("Resultado de la evaluación")
+        st.subheader("Resultado de la evaluación")
 
         col1, col2 = st.columns(2)
 
@@ -264,6 +280,264 @@ if submitted:
 
         st.error(
             "No fue posible generar la predicción."
+        )
+
+        st.exception(error)
+
+
+# =========================================================
+# EVALUACIÓN MASIVA
+# =========================================================
+
+st.divider()
+
+st.header("📂 Evaluación masiva de clientes")
+
+st.write(
+    "Cargue un archivo CSV para evaluar múltiples clientes "
+    "y priorizar aquellos con mayor riesgo de fuga."
+)
+
+st.caption(
+    "Si el archivo no contiene todas las variables requeridas, "
+    "el sistema completa las variables faltantes con valores "
+    "de referencia del dataset."
+)
+
+uploaded_file = st.file_uploader(
+    "Seleccionar archivo CSV",
+    type=["csv"],
+    key="batch_file",
+)
+
+
+if uploaded_file is not None:
+
+    try:
+
+        batch_df = pd.read_csv(uploaded_file)
+
+        if batch_df.empty:
+            st.error(
+                "El archivo cargado no contiene registros."
+            )
+
+        else:
+
+            st.success(
+                f"Archivo cargado correctamente: "
+                f"{len(batch_df)} clientes."
+            )
+
+            with st.expander(
+                "Vista previa del archivo"
+            ):
+
+                st.dataframe(
+                    batch_df.head(10),
+                    use_container_width=True,
+                )
+
+            if st.button(
+                "📊 Analizar clientes",
+                use_container_width=True,
+            ):
+
+                # Completar columnas faltantes.
+                completed_batch = complete_batch_data(
+                    batch_df
+                )
+
+                # Generar predicciones.
+                batch_results = evaluate_customers(
+                    completed_batch
+                )
+
+                # Mantener CustomerID cuando exista.
+                if (
+                    "CustomerID" in batch_df.columns
+                    and "CustomerID"
+                    not in batch_results.columns
+                ):
+
+                    batch_results.insert(
+                        0,
+                        "CustomerID",
+                        batch_df[
+                            "CustomerID"
+                        ].values,
+                    )
+
+                # Ordenar clientes desde mayor riesgo.
+                batch_results = (
+                    batch_results
+                    .sort_values(
+                        by="Probabilidad_Fuga",
+                        ascending=False,
+                    )
+                    .reset_index(drop=True)
+                )
+
+                # =========================================
+                # KPIs
+                # =========================================
+
+                total_clients = len(
+                    batch_results
+                )
+
+                high_risk = int(
+                    (
+                        batch_results[
+                            "Nivel_Riesgo"
+                        ]
+                        == "Alto"
+                    ).sum()
+                )
+
+                medium_risk = int(
+                    (
+                        batch_results[
+                            "Nivel_Riesgo"
+                        ]
+                        == "Medio"
+                    ).sum()
+                )
+
+                low_risk = int(
+                    (
+                        batch_results[
+                            "Nivel_Riesgo"
+                        ]
+                        == "Bajo"
+                    ).sum()
+                )
+
+                st.subheader(
+                    "Resumen de riesgo"
+                )
+
+                col1, col2, col3, col4 = (
+                    st.columns(4)
+                )
+
+                col1.metric(
+                    "Clientes evaluados",
+                    total_clients,
+                )
+
+                col2.metric(
+                    "🔴 Riesgo alto",
+                    high_risk,
+                )
+
+                col3.metric(
+                    "🟡 Riesgo medio",
+                    medium_risk,
+                )
+
+                col4.metric(
+                    "🟢 Riesgo bajo",
+                    low_risk,
+                )
+
+                # =========================================
+                # RANKING
+                # =========================================
+
+                st.subheader(
+                    "Clientes priorizados por riesgo"
+                )
+
+                ranking_columns = [
+                    column
+                    for column in [
+                        "CustomerID",
+                        "Probabilidad_Fuga",
+                        "Nivel_Riesgo",
+                        "Recomendacion",
+                    ]
+                    if column
+                    in batch_results.columns
+                ]
+
+                st.dataframe(
+                    batch_results[
+                        ranking_columns
+                    ],
+                    use_container_width=True,
+                )
+
+                # =========================================
+                # TOP 10
+                # =========================================
+
+                st.subheader(
+                    "🚨 Top 10 clientes con mayor riesgo"
+                )
+
+                top_10 = batch_results.head(10)
+
+                st.dataframe(
+                    top_10[
+                        ranking_columns
+                    ],
+                    use_container_width=True,
+                )
+
+                # =========================================
+                # DISTRIBUCIÓN
+                # =========================================
+
+                st.subheader(
+                    "Distribución de niveles de riesgo"
+                )
+
+                risk_distribution = (
+                    batch_results[
+                        "Nivel_Riesgo"
+                    ]
+                    .value_counts()
+                    .reindex(
+                        [
+                            "Alto",
+                            "Medio",
+                            "Bajo",
+                        ],
+                        fill_value=0,
+                    )
+                )
+
+                st.bar_chart(
+                    risk_distribution
+                )
+
+                # =========================================
+                # DESCARGA
+                # =========================================
+
+                csv_results = (
+                    batch_results
+                    .to_csv(index=False)
+                    .encode("utf-8")
+                )
+
+                st.download_button(
+                    label=(
+                        "⬇️ Descargar resultados"
+                    ),
+                    data=csv_results,
+                    file_name=(
+                        "clientes_riesgo_churn.csv"
+                    ),
+                    mime="text/csv",
+                    use_container_width=True,
+                )
+
+    except Exception as error:
+
+        st.error(
+            "No fue posible procesar el archivo."
         )
 
         st.exception(error)
