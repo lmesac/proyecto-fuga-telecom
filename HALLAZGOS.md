@@ -1,6 +1,6 @@
 # Hallazgos y decisiones
 
-Resultados descriptivos del CSV completo; no estimaciones causales.
+Resultados descriptivos del CSV sintético completo; reflejan las reglas de simulación, no comportamiento demostrado de clientes reales ni estimaciones causales.
 
 | Variable | Evidencia | Decisión |
 |---|---|---|
@@ -11,4 +11,4 @@ Resultados descriptivos del CSV completo; no estimaciones causales.
 | Complaints | Entre grupos de al menos 100 clientes, 3.0 presenta 63.86% de abandono (202 clientes) y 0.0 presenta 37.57% (6130 clientes). | Evaluar aporte en validación; no atribuir causalidad. |
 | CSAT | Entre grupos de al menos 100 clientes, 2.0 presenta 50.08% de abandono (639 clientes) y 5.0 presenta 30.86% (405 clientes). | Evaluar aporte en validación; no atribuir causalidad. |
 
-588 clientes con faltantes: conservar e imputar dentro del pipeline. ChurnReason revela la etiqueta: excluir. Procedencia y variables ampliadas: confirmar antes de uso operativo.
+588 clientes con faltantes: conservar e imputar dentro del pipeline. ChurnReason revela la etiqueta: excluir. El equipo documenta generación sintética; falta revisar el generador original y las fórmulas de variables ampliadas. Un uso operativo requeriría datos reales y una nueva validación.

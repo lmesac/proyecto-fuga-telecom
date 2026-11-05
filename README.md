@@ -5,7 +5,7 @@ Integrantes: Jorge Diaz, Federico Martinez y Lida Mesa.
 Versión de trabajo de Federico. Objetivo: comparar modelos para identificar abandono observado y apoyar la priorización de revisión de clientes. No demuestra eficacia de acciones de retención ni predicción a un plazo futuro.
 
 ## Datos
-10.000 registros recibidos del equipo. Consultar dataset-card.md: fuente externa y licencia pendientes de verificar. No se afirma que sean registros reales de IBM. Se excluyen identificador, etiqueta y motivo de abandono: 32 predictores.
+10.000 registros sintéticos y 35 variables, generados desde cero en Python según la documentación del equipo. IBM Telco Customer Churn (7.043 registros y 21 variables) fue una referencia conceptual: sus registros originales no se incorporaron. Consultar [dataset-card.md](dataset-card.md) para la fuente documental, las reglas declaradas y los pendientes de reproducibilidad y licencia. Se excluyen identificador, etiqueta y motivo de abandono: 32 predictores.
 
 ## Ejecutar
 Python 3.12 y uv. Desde la raíz:
@@ -47,7 +47,7 @@ Métricas test:
 El modelo se guarda con el preprocesador en models/churn.joblib. La aplicación recibe CSV o permite seleccionar un cliente del dataset.
 
 ## Limitaciones
-No hay fechas, horizonte de abandono ni evidencia de que satisfacción y valores estimados se midieran antes de la baja. Es una evaluación retrospectiva académica. Una mejor regresión logística no demuestra causalidad ni relaciones necesariamente lineales. Probabilidades no calibradas para uso operativo. El conjunto de prueba no debe usarse para ajustar hiperparámetros.
+No hay fechas, horizonte de abandono ni evidencia de que satisfacción y valores estimados se midieran antes de la baja. Es una evaluación académica sobre una simulación: las relaciones y métricas no constituyen evidencia del comportamiento de clientes reales. Una mejor regresión logística no demuestra causalidad ni relaciones necesariamente lineales. Probabilidades no calibradas para uso operativo. El conjunto de prueba no debe usarse para ajustar hiperparámetros.
 
 ## Estructura
 src/telecom_churn contiene carga, preparación, modelos, entrenamiento y predicción; app contiene interfaz; tests valida carga, procesamiento e inferencia; notebooks/02_eda_federico.ipynb contiene EDA con Plotly. REQUISITOS.md identifica pendientes técnicos y del equipo.

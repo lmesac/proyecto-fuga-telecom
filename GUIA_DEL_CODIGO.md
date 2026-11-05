@@ -12,7 +12,7 @@
 Exactitud: porcentaje total de aciertos. Precisión: de los señalados, cuántos abandonan. Recall: de los abandonos, cuántos detectamos. F1 combina precisión y recall. ROC-AUC mide ordenación entre clases a través de umbrales. Umbral es el punto a partir del que se señala riesgo; 50% es una decisión inicial, no una constante universal.
 
 ## Qué falta verificar
-Fuente/licencia y transformación del dataset; descarga reproducible; validación visual de la app; revisión del equipo y PR. No usar test repetidamente para escoger mejoras.
+Generador original, autoría y licencia del dataset sintético; generación reproducible; validación visual de la app; revisión del equipo y PR. No usar test repetidamente para escoger mejoras.
 
 ## Evaluación complementaria
 evaluate.py ejecuta cinco pliegues sobre las 6.000 filas de entrenamiento, compara umbrales sobre validación y simula revisar el 20% de mayor riesgo. También permuta variables para medir su aporte. No modifica el pipeline guardado ni el umbral de la app. La desviación entre folds no es un intervalo de confianza.
