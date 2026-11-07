@@ -14,7 +14,7 @@ predict:
 	uv run python -m telecom_churn.predict
 
 app:
-	uv run streamlit run app.py
+	uv run streamlit run app/app_j.py
 
 test:
 	uv run pytest -v
