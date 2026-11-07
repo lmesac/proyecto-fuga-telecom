@@ -245,7 +245,7 @@ proyecto-fuga-telecom/
 │       └── train.py
 ├── tests/
 │   └── test_pipeline.py
-├── ├── app/
+├── app/
 │       └── app_j.py
 ├── dataset-card.md
 ├── .gitignore
@@ -264,7 +264,7 @@ proyecto-fuga-telecom/
 | `models/`                    | Almacena el modelo entrenado.                                                       |
 | `reports/`                   | Contiene métricas y resultados de evaluación.                                       |
 | `tests/`                     | Contiene las pruebas automatizadas.                                                 |
-| `app_j.py`                     | Implementa la aplicación final de streamlit para evaluacion individual y masiva del riesgo del churn Streamlit.                                                 |
+| `app/app_j.py`                     | Implementa la aplicación final de streamlit para evaluacion individual y masiva del riesgo del churnStreamlit.                                                 |
 | `.github/workflows/ci.yml`   | Configura la integración continua con GitHub Actions.                               |
 | `Makefile`                   | Automatiza tareas frecuentes.                                                       |
 | `pyproject.toml` y `uv.lock` | Definen el proyecto y permiten reproducir las dependencias mediante `uv`.           |
