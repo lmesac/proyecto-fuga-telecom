@@ -121,7 +121,7 @@ Se utilizan dos bibliotecas principales:
 * **Seaborn:** histogramas, gráficos de barras, diagramas de caja y mapas de calor.
 * **Plotly Express:** gráficos interactivos para explorar categorías, permanencia, cargos, satisfacción y fuga.
 
-El proyecto también incluye una aplicación desarrollada con Streamlit (`app.py`) para consultar los resultados y facilitar la exploración de la información.
+El proyecto también incluye una aplicación desarrollada con Streamlit (`app/app_j.py`) para consultar los resultados y facilitar la exploración de la información.
 
 ### 5.5 Modelamiento y evaluación
 
@@ -245,7 +245,8 @@ proyecto-fuga-telecom/
 │       └── train.py
 ├── tests/
 │   └── test_pipeline.py
-├── app.py
+├── app/
+│       └── app_j.py
 ├── dataset-card.md
 ├── .gitignore
 ├── Makefile
@@ -263,7 +264,7 @@ proyecto-fuga-telecom/
 | `models/`                    | Almacena el modelo entrenado.                                                       |
 | `reports/`                   | Contiene métricas y resultados de evaluación.                                       |
 | `tests/`                     | Contiene las pruebas automatizadas.                                                 |
-| `app.py`                     | Implementa la aplicación Streamlit.                                                 |
+| `app/app_j.py`                     | Implementa la aplicación final de streamlit para evaluacion individual y masiva del riesgo del churnStreamlit.                                                 |
 | `.github/workflows/ci.yml`   | Configura la integración continua con GitHub Actions.                               |
 | `Makefile`                   | Automatiza tareas frecuentes.                                                       |
 | `pyproject.toml` y `uv.lock` | Definen el proyecto y permiten reproducir las dependencias mediante `uv`.           |
