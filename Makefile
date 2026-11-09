@@ -2,10 +2,10 @@
 .PHONY: setup install train predict app test lint check
 
 setup:
-	uv sync
+	uv sync --locked
 
 install:
-	uv sync
+	uv sync --locked
 
 train:
 	uv run python -m telecom_churn.train
