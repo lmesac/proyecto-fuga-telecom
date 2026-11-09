@@ -81,8 +81,18 @@ def final_evaluation():
         "false_negatives": int(fn),
         "true_positives": int(tp)
     }
+    # 7. Guardar resultados de la evaluación final
+    reports_dir = MODEL_PATH.parent.parent / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
 
-    # 7. Mostrar resultados
+    output_path = reports_dir / "final_evaluation.json"
+
+    with open(output_path, "w", encoding="utf-8") as file:
+        json.dump(results, file, indent=4, ensure_ascii=False)
+
+    print(f"\nReporte guardado en: {output_path}")
+
+    # 8. Mostrar resultados
     print("\nEVALUACIÓN FINAL DEL MODELO")
     print("=" * 50)
 

@@ -4,8 +4,7 @@ Módulo de preparación y transformación de variables.
 
 Responsabilidades:
 1. Separar variables predictoras y variable objetivo.
-2. Excluir identificadores y variables no disponibles
-   para la predicción.
+2. Excluir identificadores y variables no disponibles para la predicción.
 3. Identificar variables numéricas y categóricas.
 4. Construir el preprocesador de Scikit-learn.
 

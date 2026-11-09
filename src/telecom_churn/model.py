@@ -2,12 +2,9 @@
 """
 Módulo de construcción de modelos de Machine Learning.
 
-Define los algoritmos de clasificación y construye
-los pipelines que integran el preprocesamiento con
-cada modelo.
+Define los algoritmos de clasificación y construye los pipelines que integran el preprocesamiento con cada modelo.
 
-El entrenamiento, evaluación y almacenamiento se realizan
-en train.py.
+El entrenamiento, evaluación y almacenamiento se realizan en train.py.
 """
 
 from sklearn.pipeline import Pipeline
