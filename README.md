@@ -23,6 +23,16 @@ La pregunta que orienta el análisis es:
 
 La variable objetivo es `Churn`. La clase positiva representa a los clientes que abandonan el servicio y la clase negativa a quienes permanecen.
 
+### 2.1 Uso previsto y criterios de evaluación
+
+El usuario previsto es un analista de atención y retención. La decisión que se busca apoyar es priorizar qué clientes revisar, a partir de la probabilidad estimada de abandono y del contexto de atención.
+
+El objetivo analítico es comparar clasificadores sobre el dataset sintético mediante un procedimiento reproducible. El criterio implementado para seleccionar el modelo es el mayor F1 promedio en validación cruzada sobre entrenamiento. El desempeño final se describe con precisión, recall, F1, exactitud y ROC-AUC en prueba.
+
+Como criterio de negocio para una evaluación posterior, se propone medir cuántos abandonos se identifican dentro de la cantidad de clientes que el equipo pueda contactar. La capacidad de atención, los costos y una meta de retención deben acordarse antes de evaluar una intervención real. En este ejercicio, esos resultados de negocio quedan pendientes de validación.
+
+Los principales riesgos son el alcance sintético del dataset, la disponibilidad temporal de las variables y la ausencia de costos operativos para justificar una política de intervención.
+
 ## 3. Procedencia y construcción del dataset
 
 ### 3.1 Fuente de referencia
@@ -100,7 +110,16 @@ Se utilizan, entre otras, funciones de Pandas como:
 
 Se revisan los tipos de datos, las cadenas y categorías, los valores faltantes, los duplicados y la variable objetivo `Churn`. También se examinan posibles valores atípicos mediante criterios como el rango intercuartílico (IQR).
 
-La identificación de valores atípicos no implica eliminarlos automáticamente: cada tratamiento debe justificarse según la naturaleza de la variable y su pertinencia analítica.
+La identificación de valores atípicos requiere revisar su naturaleza antes de decidir un tratamiento. En el flujo actual se conservan las filas del archivo y el preprocesamiento se realiza mediante un `ColumnTransformer` dentro del `Pipeline`.
+
+| Tipo de variable | Tratamiento implementado |
+| --- | --- |
+| Numérica | Completar faltantes con la mediana y estandarizar con `StandardScaler`. |
+| Categórica | Completar faltantes con la categoría `missing` y codificar con `OneHotEncoder`, que admite categorías nuevas mediante `handle_unknown="ignore"`. |
+
+Se excluyen `CustomerID`, `ChurnReason` y la etiqueta `Churn` de las entradas del modelo. Quedan 32 predictores antes de codificarlos. La etiqueta se transforma a 0 para permanencia y 1 para abandono.
+
+Las medianas, el escalado y la codificación se ajustan con entrenamiento. Durante la validación cruzada, el pipeline se vuelve a ajustar dentro de cada partición. El pipeline guardado reúne estas transformaciones y el clasificador para utilizarlos en predicción.
 
 ### 5.3 Análisis exploratorio y operaciones con Pandas
 
@@ -113,6 +132,17 @@ El análisis incluye:
 Se emplean operaciones de Pandas como `loc`, `iloc`, `groupby()`, `pivot_table()`, `crosstab()` y `merge()`, además de estructuras de agrupación jerárquica o MultiIndex cuando corresponde.
 
 El proyecto trabaja con un único archivo de entrada. Por ello, no se utiliza `concat()` para integrar fuentes originales distintas.
+
+#### Hallazgos del análisis exploratorio
+
+| Hallazgo en los datos sintéticos | Interpretación para el proyecto |
+| --- | --- |
+| 4.169 abandonos (41,69%) y 5.831 permanencias (58,31%). | Mantener particiones estratificadas y valorar la detección de abandonos junto a la exactitud. |
+| Abandono de 50,13% en contratos mensuales (5.526 registros) y 29,74% en contratos de dos años (2.021). | Evaluar el aporte del contrato como predictor. |
+| Antigüedad mediana de 26 meses entre abandonos y 40 entre permanencias. | Examinar antigüedad y sus relaciones con cargos acumulados y variables derivadas. |
+| 150 faltantes en cada una de cuatro columnas, que afectan a 588 filas distintas, y cero filas duplicadas. | Conservar filas y tratar faltantes dentro del pipeline. |
+
+Estos hallazgos describen el CSV completo y las asociaciones de la simulación. Los tamaños de grupo y los límites de interpretación se desarrollan en el [notebook del EDA](notebooks/01_analisis_exploratorio.ipynb).
 
 ### 5.4 Visualización
 
@@ -131,7 +161,11 @@ Se entrenan y comparan tres algoritmos de clasificación:
 2. Bosque Aleatorio (`RandomForestClassifier`).
 3. HistGradientBoosting (`HistGradientBoostingClassifier`).
 
-La evaluación considera Accuracy, Precision, Recall, F1-Score y ROC-AUC. La comparación se complementa con validación cruzada utilizando F1-Score.
+Se realiza una separación estratificada con semilla 42, destinando 8.000 registros (80%) a entrenamiento y 2.000 (20%) a prueba. Sobre entrenamiento se ejecuta validación cruzada estratificada de cinco particiones, con F1 como criterio de selección.
+
+Cada candidato se ajusta también con los 8.000 registros de entrenamiento y se evalúa sobre prueba. El código selecciona el ganador mediante `cv_f1_mean` y guarda su pipeline. Las métricas de prueba se utilizan para reportar el desempeño final.
+
+La evaluación considera Accuracy, Precision, Recall, F1-Score y ROC-AUC. Al revisar futuras mejoras, las decisiones de selección deben apoyarse en entrenamiento y validación, reservando prueba para la evaluación final.
 
 ## 6. Prevención de fuga de información (Data Leakage)
 
@@ -157,7 +191,7 @@ Esta limitación evita presentar como análisis temporal operaciones que el data
 
 ## 8. Resultados de los modelos
 
-Los siguientes resultados corresponden a la evaluación documentada en el conjunto de prueba, con el umbral de clasificación predeterminado de 0,50:
+Los siguientes resultados corresponden a la evaluación documentada en el conjunto de prueba, con el umbral de clasificación de 0,50 utilizado en la comparación de modelos:
 
 | Modelo               | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 | -------------------- | -------: | --------: | -----: | -------: | ------: |
@@ -173,7 +207,7 @@ La validación cruzada reportó los siguientes F1-Score promedio:
 | Random Forest        |            0,5586 |
 | HistGradientBoosting |            0,5883 |
 
-La Regresión Logística obtuvo el mejor F1-Score y ROC-AUC en la comparación documentada, por lo que fue seleccionada como el mejor modelo experimental de este ejercicio.
+La Regresión Logística fue seleccionada por su mayor F1 promedio de validación cruzada en entrenamiento, 0,6009. También obtuvo el mayor F1 y ROC-AUC de prueba entre los modelos del reporte. Los resultados completos están en [reports/metrics.json](reports/metrics.json).
 
 ### 8.1 Evaluación de un umbral de 0,35
 
@@ -196,15 +230,31 @@ Matriz de confusión:
 | Falsos negativos (FN)     |      183 |
 | Verdaderos positivos (TP) |      651 |
 
-## Diferencia entre los reportes de evaluación: 
+#### Diferencia entre los reportes de evaluación
 
-el archivo reports/threshold_evaluation.csv contiene los resultados de la comparación de umbrales mediante validación cruzada sobre los 8.000 registros del conjunto de entrenamiento. En cambio, las métricas y la matriz de confusión presentadas en esta sección corresponden a la evaluación final del umbral 0,35 sobre los 2.000 registros del conjunto de prueba. Por esta diferencia en los conjuntos de evaluación, sus resultados no deben compararse como si provinieran de la misma muestra.
+El archivo [reports/threshold_evaluation.csv](reports/threshold_evaluation.csv) contiene los resultados de la comparación de umbrales mediante validación cruzada sobre los 8.000 registros del conjunto de entrenamiento. En cambio, las métricas y la matriz de confusión presentadas en esta sección corresponden a la evaluación final del umbral 0,35 sobre los 2.000 registros del conjunto de prueba. Por esta diferencia en los conjuntos de evaluación, sus resultados no deben compararse como si provinieran de la misma muestra.
 
 Al reducir el umbral aumentó el Recall, es decir, se identificó una mayor proporción de los clientes clasificados como casos de fuga. Al mismo tiempo, aumentaron los falsos positivos.
 
 El umbral de 0,35 es un escenario de evaluación orientado a la sensibilidad; no se ha demostrado que sea el umbral óptimo para el negocio. Su selección operativa debería considerar el costo de las campañas de retención, el valor del cliente, la capacidad de atención y el costo de no intervenir oportunamente.
 
 > Los resultados anteriores deben contrastarse con los reportes de la ejecución final del pipeline antes de utilizarlos como resultados definitivos de una nueva versión del proyecto.
+
+### 8.2 Umbral de clasificación y niveles de riesgo
+
+La probabilidad estimada se utiliza con reglas distintas según la salida que se consulta.
+
+| Uso | Regla actual |
+| --- | --- |
+| Comparación de los tres modelos | Métricas de clasificación con umbral 0,50. |
+| Predicción de abandono | `Probabilidad_Fuga >= 0,35` produce `Prediccion_Fuga = 1` y el resultado «Posible fuga». Por debajo, produce 0 y «No fuga». |
+| Riesgo bajo | Probabilidad menor que 0,35. |
+| Riesgo medio | Probabilidad mayor o igual que 0,35 y menor que 0,65. |
+| Riesgo alto | Probabilidad mayor o igual que 0,65. |
+
+Por ejemplo, una probabilidad de 0,50 se clasifica como «Posible fuga» y riesgo «Medio». La clasificación binaria señala abandono estimado y el nivel de riesgo ayuda a ordenar la atención.
+
+El umbral de predicción se define en `src/telecom_churn/config.py`. Los límites de riesgo están en `src/telecom_churn/presentation/risk.py`. Son reglas de la demostración cuya utilidad comercial requiere validación con capacidad de atención, costos y resultados de las intervenciones.
 
 ## 9. Interpretación desde el negocio y Customer Experience
 
@@ -242,11 +292,18 @@ proyecto-fuga-telecom/
 │       ├── final_evaluation.py
 │       ├── model.py
 │       ├── predict.py
-│       └── train.py
+│       ├── train.py
+│       ├── presentation/
+│       │   ├── __init__.py
+│       │   └── risk.py
+│       └── services/
+│           ├── __init__.py
+│           └── churn_service.py
 ├── tests/
-│   └── test_pipeline.py
+│   ├── test_pipeline.py
+│   └── test_risk_service.py
 ├── app/
-│       └── app_j.py
+│   └── app_j.py
 ├── dataset-card.md
 ├── .gitignore
 ├── Makefile
@@ -264,7 +321,9 @@ proyecto-fuga-telecom/
 | `models/`                    | Almacena el modelo entrenado.                                                       |
 | `reports/`                   | Contiene métricas y resultados de evaluación.                                       |
 | `tests/`                     | Contiene las pruebas automatizadas.                                                 |
-| `app/app_j.py`                     | Implementa la aplicación final de streamlit para evaluacion individual y masiva del riesgo del churnStreamlit.                                                 |
+| `app/app_j.py` | Implementa la aplicación Streamlit para evaluación individual y masiva del riesgo de abandono. |
+| `src/telecom_churn/services/` | Combina la predicción con la clasificación de riesgo y las recomendaciones. |
+| `src/telecom_churn/presentation/` | Define los niveles de riesgo y sus recomendaciones. |
 | `.github/workflows/ci.yml`   | Configura la integración continua con GitHub Actions.                               |
 | `Makefile`                   | Automatiza tareas frecuentes.                                                       |
 | `pyproject.toml` y `uv.lock` | Definen el proyecto y permiten reproducir las dependencias mediante `uv`.           |
@@ -274,9 +333,10 @@ proyecto-fuga-telecom/
 
 ### 11.1 Requisitos
 
-* Python en la versión compatible con `pyproject.toml`.
+* Python 3.12, utilizado por la integración continua. El proyecto declara compatibilidad desde Python 3.10 en `pyproject.toml`.
 * Git.
 * `uv`.
+* `make` para utilizar los comandos del Makefile. En Windows puede utilizarse la alternativa directa con `uv` indicada en cada paso.
 * Visual Studio Code y las extensiones Python y Jupyter, si se trabajará con el notebook.
 
 ### 11.2 Clonar el repositorio
@@ -292,7 +352,9 @@ cd proyecto-fuga-telecom
 uv sync --locked
 ```
 
-Este comando sincroniza el entorno virtual con las dependencias registradas en el proyecto y en `uv.lock`.
+Este comando sincroniza el entorno virtual con las dependencias registradas en el proyecto y en `uv.lock`. Ejecutar los comandos siguientes desde la raíz del repositorio, donde se encuentran `pyproject.toml` y `Makefile`.
+
+En la versión actual se necesita `data/telecom_churn_10000.csv`, incluido en el repositorio. El procedimiento de generación reproducible está pendiente de incorporación por el equipo. La [ficha del dataset](dataset-card.md) describe su procedencia y alcance.
 
 ### 11.4 Ejecutar el notebook
 
@@ -311,11 +373,26 @@ make lint
 make test
 ```
 
+Alternativa directa en PowerShell o en una terminal sin `make`:
+
+```sh
+uv run ruff check src tests
+uv run pytest -v
+```
+
 ### 11.6 Entrenar el modelo
 
 ```bash
 make train
 ```
+
+Alternativa directa:
+
+```sh
+uv run python -m telecom_churn.train
+```
+
+El entrenamiento guarda el pipeline ganador en `models/best_model.pkl` y la comparación de modelos en `reports/metrics.json`. Al repetirlo, se actualizan ambos archivos.
 
 ### 11.7 Ejecutar la aplicación
 
@@ -323,7 +400,65 @@ make train
 make app
 ```
 
-La aplicación se ejecuta mediante Streamlit.
+Alternativa directa:
+
+```sh
+uv run streamlit run app/app_j.py
+```
+
+Abrir la dirección indicada como **Local URL**, normalmente `http://localhost:8501`. Mantener la terminal abierta durante el uso y pulsar `Ctrl+C` para detener el servicio. Se necesitan el CSV del proyecto y el modelo entrenado.
+
+### 11.8 Utilizar la aplicación
+
+**Evaluación individual**
+
+1. Introducir antigüedad, contrato, cargo mensual, servicio de internet, método de pago, pago automático, tickets, quejas, NPS y CSAT.
+2. Pulsar **Evaluar riesgo**.
+3. Consultar la probabilidad estimada de fuga, el nivel de riesgo y la recomendación.
+4. Abrir **Ver datos enviados al modelo** para revisar el registro completo utilizado.
+
+**Ejemplo ilustrativo de resultado**
+
+Si la aplicación muestra una probabilidad de fuga del **50 %**, el resultado se interpreta así.
+
+| Salida | Valor del ejemplo | Interpretación |
+| --- | --- | --- |
+| Probabilidad de fuga | 50 % | Estimación de abandono generada por el modelo para los datos enviados. |
+| Nivel de riesgo | Medio | La probabilidad está entre 35 % inclusive y 65 % exclusivo. |
+| Recomendación | Revisar la experiencia del cliente y considerar una acción preventiva de retención. | Orientación asociada al nivel medio en la demostración. |
+
+Con el umbral de clasificación de 35 %, este registro también se clasifica como **Posible fuga** en la salida del servicio de predicción. El formulario muestra la probabilidad, el nivel de riesgo y la recomendación.
+
+El 50 % se utiliza para ilustrar la lectura del resultado. El valor que aparezca al probar la app dependerá de los datos del cliente y del modelo guardado. Su interpretación tiene el alcance académico del dataset sintético. La sección 8.2 detalla los umbrales utilizados.
+
+Las otras variables se completan con medianas numéricas y modas categóricas calculadas a partir del CSV de referencia completo. Por ello, el resultado depende tanto de los datos introducidos como de los valores completados. La revisión del registro permite comprobar si representa el escenario que se desea analizar, especialmente en campos relacionados como antigüedad, cohorte y cargos acumulados.
+
+**Evaluación masiva**
+
+1. Cargar un CSV con nombres de columnas compatibles con el dataset. Para una prueba del flujo, puede seleccionarse `data/telecom_churn_10000.csv`.
+2. Pulsar **Analizar clientes**.
+3. Consultar el resumen por niveles de riesgo, el ranking y los diez registros con mayor puntuación.
+4. Descargar los resultados mediante **Descargar resultados**.
+
+Conviene proporcionar las 32 variables predictoras. La aplicación actual completa columnas ausentes con valores de referencia del CSV. Las celdas vacías de columnas existentes se procesan con el imputador del modelo. `CustomerID` permite identificar los resultados, mientras `Churn` y `ChurnReason` se excluyen de la predicción.
+
+La prueba con el CSV completo demuestra el funcionamiento de la interfaz. Las métricas de desempeño se calculan mediante la separación de entrenamiento y prueba descrita en la sección 5.5.
+
+### 11.9 Ejecutar las evaluaciones complementarias
+
+Después de entrenar el modelo, ejecutar:
+
+```sh
+uv run python -m telecom_churn.evaluation
+uv run python -m telecom_churn.final_evaluation
+```
+
+| Comando | Resultado |
+| --- | --- |
+| `telecom_churn.evaluation` | Compara umbrales con predicciones de validación cruzada sobre las 8.000 filas de entrenamiento y actualiza `reports/threshold_evaluation.csv`. |
+| `telecom_churn.final_evaluation` | Evalúa el modelo guardado con umbral 0,35 sobre las 2.000 filas de prueba e imprime las métricas y la matriz de confusión en la terminal. |
+
+La interpretación de las métricas debe conservar el conjunto evaluado y el umbral utilizado, para poder comparar resultados equivalentes.
 
 ## 12. Calidad y reproducibilidad
 
