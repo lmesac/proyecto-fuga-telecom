@@ -1,9 +1,18 @@
 import pandas as pd
 import streamlit as st
 
-from telecom_churn.data import load_data
 from telecom_churn.services.churn_service import evaluate_customers
-
+from telecom_churn.services.customer_data import (
+    get_reference_data,
+    category_options,
+    default_value,
+    build_base_customer,
+    complete_batch_data,
+)
+from telecom_churn.services.customer_validation import (
+    validate_customer_data,
+    validate_known_columns,
+)
 
 # =========================================================
 # CONFIGURACIÓN
@@ -27,76 +36,9 @@ st.write(
 # DATOS DE REFERENCIA
 # =========================================================
 
-df_reference = load_data()
+df_reference = get_reference_data()
 
 
-def category_options(column: str) -> list:
-    """
-    Obtiene las categorías válidas de una variable
-    directamente desde el dataset.
-    """
-    return sorted(
-        df_reference[column]
-        .dropna()
-        .unique()
-        .tolist()
-    )
-
-
-def default_value(column: str):
-    """
-    Devuelve un valor de referencia para completar
-    automáticamente variables no ingresadas.
-    """
-
-    if pd.api.types.is_numeric_dtype(
-        df_reference[column]
-    ):
-        return df_reference[column].median()
-
-    return df_reference[column].mode().iloc[0]
-
-
-def build_base_customer() -> dict:
-    """
-    Construye un cliente base utilizando valores típicos
-    del dataset.
-    """
-
-    excluded_columns = {
-        "CustomerID",
-        "Churn",
-        "ChurnReason",
-    }
-
-    customer = {}
-
-    for column in df_reference.columns:
-
-        if column in excluded_columns:
-            continue
-
-        customer[column] = default_value(column)
-
-    return customer
-
-
-def complete_batch_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Completa las variables faltantes de un archivo masivo
-    utilizando valores de referencia del dataset.
-    """
-
-    completed_df = df.copy()
-
-    base_customer = build_base_customer()
-
-    for column, value in base_customer.items():
-
-        if column not in completed_df.columns:
-            completed_df[column] = value
-
-    return completed_df
 
 
 # =========================================================
@@ -123,7 +65,7 @@ with st.form("quick_customer_form"):
 
     contract = col2.selectbox(
         "Tipo de contrato",
-        category_options("Contract"),
+        category_options("Contract",df_reference),
     )
 
     col1, col2 = st.columns(2)
@@ -132,25 +74,25 @@ with st.form("quick_customer_form"):
         "Cargo mensual",
         min_value=0.0,
         value=float(
-            default_value("MonthlyCharges")
+            default_value("MonthlyCharges",df_reference)
         ),
     )
 
     internet_service = col2.selectbox(
         "Servicio de internet",
-        category_options("InternetService"),
+        category_options("InternetService",df_reference),
     )
 
     col1, col2 = st.columns(2)
 
     payment_method = col1.selectbox(
         "Método de pago",
-        category_options("PaymentMethod"),
+        category_options("PaymentMethod",df_reference),
     )
 
     auto_pay = col2.selectbox(
         "Pago automático",
-        category_options("AutoPay"),
+        category_options("AutoPay",df_reference),
     )
 
     col1, col2 = st.columns(2)
@@ -159,7 +101,7 @@ with st.form("quick_customer_form"):
         "Tickets de soporte",
         min_value=0,
         value=int(
-            default_value("SupportTickets")
+            default_value("SupportTickets",df_reference)
         ),
     )
 
@@ -167,7 +109,7 @@ with st.form("quick_customer_form"):
         "Quejas",
         min_value=0,
         value=int(
-            default_value("Complaints")
+            default_value("Complaints",df_reference)
         ),
     )
 
@@ -176,14 +118,14 @@ with st.form("quick_customer_form"):
     nps = col1.number_input(
         "NPS",
         value=float(
-            default_value("NPS")
+            default_value("NPS",df_reference)
         ),
     )
 
     csat = col2.number_input(
         "CSAT",
         value=float(
-            default_value("CSAT")
+            default_value("CSAT",df_reference)
         ),
     )
 
@@ -195,7 +137,7 @@ with st.form("quick_customer_form"):
 
 if submitted:
 
-    customer = build_base_customer()
+    customer = build_base_customer(df_reference)
 
     customer["TenureMonths"] = tenure_months
     customer["Contract"] = contract
@@ -211,7 +153,7 @@ if submitted:
     customer_df = pd.DataFrame([customer])
 
     try:
-
+        validate_customer_data(customer_df)
         result = evaluate_customers(customer_df)
 
         probability = float(
@@ -344,9 +286,23 @@ if uploaded_file is not None:
             ):
 
                 # Completar columnas faltantes.
-                completed_batch = complete_batch_data(
-                    batch_df
+                allowed_columns = set(
+                    build_base_customer(df_reference).keys()
                 )
+
+                allowed_columns.add("CustomerID")
+                allowed_columns.add("Churn")
+                allowed_columns.add("ChurnReason")
+                validate_known_columns(
+                batch_df,
+                allowed_columns,
+                )
+                
+                completed_batch = complete_batch_data(
+                    batch_df,
+                    df_reference,
+                )
+                validate_customer_data(completed_batch)
 
                 # Generar predicciones.
                 batch_results = evaluate_customers(
