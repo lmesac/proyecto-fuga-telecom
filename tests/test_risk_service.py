@@ -34,8 +34,9 @@ def test_recommendation():
     )
 
 
-def test_evaluate_customers_adds_risk_columns():
-    df = load_data()
+def test_evaluate_customers_adds_risk_columns(temporary_pipeline):
+    # El servicio usa el modelo temporal y un cliente reservado para inferencia.
+    df = temporary_pipeline.customers
 
     customer = df.drop(
         columns=["CustomerID", "Churn", "ChurnReason"],
