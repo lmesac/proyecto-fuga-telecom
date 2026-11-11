@@ -41,7 +41,26 @@ Se tomó como referencia conceptual y estructural el conjunto de datos **IBM Tel
 
 **Los registros originales de Kaggle no se incorporaron al archivo utilizado en este proyecto.** El dataset final se generó sintéticamente desde cero en Python, tomando como orientación la estructura y las dimensiones de información del conjunto de referencia.
 
-### 3.2 Construcción del conjunto sintético
+### 3.2 Generación de Datos / Ingesta
+
+## 📊 1. Generación del Dataset Sintético
+
+Dado que el proyecto utiliza una versión ampliada y enriquecida del dataset original de Telco Customer Churn de Kaggle (10,000 registros y 35 columnas), se incluye un script automatizado en Python para garantizar la reproducibilidad exacta de los datos.
+
+### Ubicación del Script
+El código generador se encuentra en la siguiente ruta del repositorio:
+`data/generar_dataset.py`
+
+### Instrucciones de Reproducción
+Para generar o reconstruir el archivo `telecom_churn_10000.csv` en tu entorno local, ejecuta los siguientes pasos:
+
+1. Clona el repositorio y cambia a la rama de desarrollo:
+   ```bash
+   git clone [https://github.com/lmesac/proyecto-fuga-telecom.git](https://github.com/lmesac/proyecto-fuga-telecom.git)
+   cd proyecto-fuga-telecom
+   git checkout desarrollo-inicial
+
+### 3.3 Construcción del conjunto sintético
 
 El archivo `telecom_churn_10000.csv` contiene:
 
@@ -68,7 +87,7 @@ Algunas variables se generaron mediante distribuciones aleatorias y otras se cal
 
 Durante la generación se incorporaron valores faltantes de manera controlada, aproximadamente en el 1,5 % de los registros de `PaymentMethod`, `MonthlyCharges`, `NPS` y `CSAT`.
 
-### 3.3 Alcance y limitaciones de los datos
+### 3.4 Alcance y limitaciones de los datos
 
 El conjunto es **completamente sintético**: no representa registros reales de clientes ni una muestra estadística de una empresa de telecomunicaciones. Sus distribuciones, relaciones entre variables y resultados de abandono dependen de las reglas utilizadas en la simulación.
 
