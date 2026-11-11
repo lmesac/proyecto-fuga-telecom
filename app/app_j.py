@@ -9,6 +9,10 @@ from telecom_churn.services.customer_data import (
     build_base_customer,
     complete_batch_data,
 )
+from telecom_churn.services.customer_validation import (
+    validate_customer_data,
+    validate_known_columns,
+)
 
 # =========================================================
 # CONFIGURACIÓN
@@ -133,7 +137,7 @@ with st.form("quick_customer_form"):
 
 if submitted:
 
-    customer = build_base_customer()
+    customer = build_base_customer(df_reference)
 
     customer["TenureMonths"] = tenure_months
     customer["Contract"] = contract
@@ -149,7 +153,7 @@ if submitted:
     customer_df = pd.DataFrame([customer])
 
     try:
-
+        validate_customer_data(customer_df)
         result = evaluate_customers(customer_df)
 
         probability = float(
@@ -282,9 +286,23 @@ if uploaded_file is not None:
             ):
 
                 # Completar columnas faltantes.
-                completed_batch = complete_batch_data(
-                    batch_df
+                allowed_columns = set(
+                    build_base_customer(df_reference).keys()
                 )
+
+                allowed_columns.add("CustomerID")
+                allowed_columns.add("Churn")
+                allowed_columns.add("ChurnReason")
+                validate_known_columns(
+                batch_df,
+                allowed_columns,
+                )
+                
+                completed_batch = complete_batch_data(
+                    batch_df,
+                    df_reference,
+                )
+                validate_customer_data(completed_batch)
 
                 # Generar predicciones.
                 batch_results = evaluate_customers(
